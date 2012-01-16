@@ -1,20 +1,12 @@
 require 'faraday/error'
-require 'mtgox/ask'
-require 'mtgox/balance'
-require 'mtgox/bid'
-require 'mtgox/buy'
 require 'mtgox/connection'
-require 'mtgox/max_bid'
-require 'mtgox/min_ask'
 require 'mtgox/request'
-require 'mtgox/sell'
-require 'mtgox/ticker'
-require 'mtgox/trade'
 
 module MtGox
   class Client
     include MtGox::Connection
     include MtGox::Request
+    include MtGox::Models
 
     ORDER_TYPES = {:sell => 1, :buy => 2}
 

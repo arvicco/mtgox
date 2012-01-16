@@ -1,6 +1,6 @@
+require 'mtgox/models'
 require 'mtgox/client'
 require 'mtgox/configuration'
-require 'mtgox/error'
 
 module MtGox
   extend Configuration
@@ -21,5 +21,12 @@ module MtGox
     def respond_to?(method, include_private=false)
       new.respond_to?(method, include_private) || super(method, include_private)
     end
+  end
+
+  # Custom error class for rescuing from all MtGox errors
+  class Error < StandardError
+  end
+
+  class MysqlError < Error
   end
 end
