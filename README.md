@@ -1,8 +1,10 @@
 # Ruby wrapper for the Mt. Gox Trade API.
 
+
 ## <a name="fork"></a>This Fork
-This fork is a rework of original business domain entities into new Models, with
-an intent to make these Models ActiveModel-compliant in future.
+This is a fork of https://github.com/sferik/mtgox. This fork features a rework of the
+original business domain entities into new Models, with an intent to make these Models
+ActiveModel-compliant in future.
 
 ## <a name="installation"></a>Installation
     gem install mt_gox
@@ -54,7 +56,7 @@ typing `btc` in your bash shell simply by setting the following alias:
 
 ## <a name="copyright"></a>Copyright
 Copyright (c) 2011 Erik Michaels-Ober.
-Copyright (c) 2012 Arvicco (extension).
+Copyright (c) 2012 Arvicco (extensions).
 
 See [LICENSE][] for details.
 
