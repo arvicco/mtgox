@@ -14,7 +14,7 @@ module MtGox
       options = {
         :headers  => {
           :accept => 'application/json',
-          :user_agent => "mtgox gem #{MtGox::Version}",
+          :user_agent => "mt_gox gem #{MtGox::VERSION}",
         },
         :ssl => {:verify => false},
         :url => 'https://mtgox.com',

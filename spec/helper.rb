@@ -43,7 +43,7 @@ def test_headers(body=test_body)
     {
       'Accept' => 'application/json',
       'Content-Type' => 'application/x-www-form-urlencoded',
-      'User-Agent' => "mtgox gem #{MtGox::Version}",
+      'User-Agent' => "mt_gox gem #{MtGox::VERSION}",
     }
   )
 end

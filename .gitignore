@@ -39,3 +39,8 @@ test/version_tmp
 tmp
 tmtags
 tramp
+
+## Idea
+.idea
+.rakeTasks
+*.iml
