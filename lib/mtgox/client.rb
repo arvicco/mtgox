@@ -10,6 +10,8 @@ module MtGox
 
     ORDER_TYPES = {:sell => 1, :buy => 2}
 
+    @@ticker = {}
+
     # Fetch a deposit address
     # @authenticated true
     # @return [String]
@@ -26,10 +28,18 @@ module MtGox
     # @return [MtGox::Ticker]
     # @example
     #   MtGox.ticker
-    def ticker
-      ticker = get('/api/0/data/ticker.php')['ticker']
-      Ticker.instance.set_attributes ticker
-      Ticker.instance
+    #   MtGox.ticker('EUR')
+    def ticker(currency=nil)
+      if currency
+        ticker = get("/api/1/BTC#{currency}/public/ticker")['return']
+        @@ticker[currency] ||= MultiTicker.new :currency => currency
+        @@ticker[currency].set_attributes ticker
+        @@ticker[currency]
+      else
+        ticker = get('/api/0/data/ticker.php')['ticker']
+        Ticker.instance.set_attributes ticker
+        Ticker.instance
+      end
     end
 
     # Fetch both bids and asks in one call, for network efficiency

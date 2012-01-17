@@ -13,6 +13,8 @@ module MtGox
            :low,
            [:vol, :volume],
            [:last, :price],
+           :last_all,
+           :last_local,
            :avg,
            :vwap
 
