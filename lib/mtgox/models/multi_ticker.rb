@@ -18,6 +18,12 @@ module MtGox
            :low => proc { |val| val['value'].to_f },
            :avg => proc { |val| val['value'].to_f },
            :vwap => proc { |val| val['value'].to_f }
+
+      def to_s
+        "<MultiTicker: #{currency} vol #{ vol.round(2) } last #{ last.round(3) }"+
+            " buy #{ buy.round(3) } sell #{ sell.round(3) } low #{ low.round(3) }"+
+            " high #{ high.round(3) } avg #{ avg.round(3) } vwap #{ vwap.round(3) } >"
+      end
     end
   end
 end
