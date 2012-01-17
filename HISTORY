@@ -6,3 +6,7 @@
 == 0.7.5 / 2012-01-17
 
 * Model now has attributes / properties
+
+== 0.7.6 / 2012-01-17
+
+* Multi-currency ticker and Depth streaming Models added

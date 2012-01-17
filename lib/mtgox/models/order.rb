@@ -10,7 +10,7 @@ module MtGox
            :dark,
            :priority,
            [:id, :oid] => :i, # Order ID
-           :date => proc { |val| Time.at val } # 1326655184
+           [:date, :time] => proc { |val| Time.at val } # 1326655184
 
     end
   end

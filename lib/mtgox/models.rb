@@ -12,3 +12,7 @@ require 'mtgox/models/min_ask'
 require 'mtgox/models/sell'
 require 'mtgox/models/ticker'
 require 'mtgox/models/trade'
+
+# Streaming API
+require 'mtgox/models/depth'
+require 'mtgox/models/multi_ticker'

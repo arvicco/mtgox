@@ -15,15 +15,12 @@ module MtGox
            :amount => :f, #  10.672154
            :price => :f, #   6.81526
            [:id, :tid] => :i, #  "tid"=>"1326655184087854"
-           :date => proc { |val| Time.at val } # 1326655184
+           [:date, :time] => proc { |val| Time.at val } # 1326655184
 
-      def to_s
-        "<Trade: #{@date.strftime('%H:%M:%S')} #{ amount.round(3) } at #{ price.round(3) }"
-      end
-
-      def to_s
-        "<Trade: #{ amount.round(3) } at #{ price.round(3) }"+
-            " #{price_currency}/#{item} (#{trade_type}) - #{ properties } #{ primary } >"
+      def to_s with_date=nil
+        (with_date ? "#{@date.strftime('%H:%M:%S')} " : '') +
+            "<Trade: #{ amount.round(3) } at #{ price.round(3) }"+
+            " #{price_currency}/#{item} (#{trade_type}) #{ properties } #{ primary } >"
       end
 
     end
