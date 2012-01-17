@@ -4,7 +4,8 @@ module MtGox
   module Models
     class Offer < Model
 
-      attr_accessor :amount, :price
+      prop :amount => :f,
+           :price => :f
     end
   end
 end

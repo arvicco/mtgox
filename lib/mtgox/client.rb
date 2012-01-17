@@ -28,13 +28,7 @@ module MtGox
     #   MtGox.ticker
     def ticker
       ticker = get('/api/0/data/ticker.php')['ticker']
-      Ticker.instance.buy    = ticker['buy'].to_f
-      Ticker.instance.high   = ticker['high'].to_f
-      Ticker.instance.price  = ticker['last'].to_f
-      Ticker.instance.low    = ticker['low'].to_f
-      Ticker.instance.sell   = ticker['sell'].to_f
-      Ticker.instance.volume = ticker['vol'].to_f
-      Ticker.instance.vwap   = ticker['vwap'].to_f
+      Ticker.instance.set_attributes ticker
       Ticker.instance
     end
 
@@ -86,9 +80,7 @@ module MtGox
     # @example
     #   MtGox.min_ask
     def min_ask
-      min_ask = asks.first
-      MinAsk.instance.price = min_ask.price
-      MinAsk.instance.amount = min_ask.amount
+      MinAsk.instance.set_attributes asks.first.attributes
       MinAsk.instance
     end
 
@@ -99,9 +91,7 @@ module MtGox
     # @example
     #   MtGox.max_bid
     def max_bid
-      max_bid = bids.first
-      MaxBid.instance.price = max_bid.price
-      MaxBid.instance.amount = max_bid.amount
+      MaxBid.instance.set_attributes bids.first.attributes
       MaxBid.instance
     end
 
@@ -112,7 +102,7 @@ module MtGox
     # @example
     #   MtGox.trades
     def trades
-      get('/api/0/data/getTrades.php').sort_by{|trade| trade['date']}.map do |trade|
+      get('/api/0/data/getTrades.php').sort_by { |trade| trade['date'] }.map do |trade|
         Trade.new(trade)
       end
     end
@@ -125,6 +115,10 @@ module MtGox
     #   MtGox.balance
     def balance
       parse_balance(post('/api/0/getFunds.php', {}))
+      #info = post('/code/info.php', pass_params)
+      #info['Wallets'].values.map { |v| v['Balance'] }.map do |balance_info|
+      #  Balance.new(balance_info['currency'], balance_info['value'])
+      #end
     end
 
     # Fetch your open orders, both buys and sells, for network efficiency
@@ -202,13 +196,13 @@ module MtGox
     #     MtGox.cancel {'oid' => '1234567890', 'type' => 2}
     def cancel(args)
       if args.is_a?(Hash)
-        order = args.delete_if{|k, v| !['oid', 'type'].include?(k.to_s)}
+        order = args.delete_if { |k, v| !['oid', 'type'].include?(k.to_s) }
         parse_orders(post('/api/0/cancelOrder.php', order)['orders'])
       else
         orders = post('/api/0/getOrders.php', {})['orders']
-        order = orders.find{|order| order['oid'] == args.to_s}
+        order = orders.find { |order| order['oid'] == args.to_s }
         if order
-          order = order.delete_if{|k, v| !['oid', 'type'].include?(k.to_s)}
+          order = order.delete_if { |k, v| !['oid', 'type'].include?(k.to_s) }
           parse_orders(post('/api/0/cancelOrder.php', order)['orders'])
         else
           raise Faraday::Error::ResourceNotFound, {:status => 404, :headers => {}, :body => 'Order not found.'}
@@ -233,20 +227,20 @@ module MtGox
 
     def parse_balance(balance)
       balances = []
-      balances << Balance.new('BTC', balance['btcs'])
-      balances << Balance.new('USD', balance['usds'])
+      balances << Balance.new(:currency => 'BTC', :amount => balance['btcs'])
+      balances << Balance.new(:currency => 'USD', :amount => balance['usds'])
       balances
     end
 
     def parse_orders(orders)
       buys = []
       sells = []
-      orders.sort_by{|order| order['date']}.each do |order|
+      orders.sort_by { |order| order['date'] }.each do |order|
         case order['type']
-        when ORDER_TYPES[:sell]
-          sells << Sell.new(order)
-        when ORDER_TYPES[:buy]
-          buys << Buy.new(order)
+          when ORDER_TYPES[:sell]
+            sells << Sell.new(order)
+          when ORDER_TYPES[:buy]
+            buys << Buy.new(order)
         end
       end
       {:buys => buys, :sells => sells}

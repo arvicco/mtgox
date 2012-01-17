@@ -3,14 +3,15 @@ require 'mtgox/models/offer'
 module MtGox
   module Models
     class Order < Offer
-      attr_accessor :id, :date
+      prop :currency,
+           :item,
+           :type, #    1 for sell order or 2 for buy order
+           :status, #  1 for active, 2 for not enough funds
+           :dark,
+           :priority,
+           [:id, :oid] => :i, # Order ID
+           :date => proc { |val| Time.at val } # 1326655184
 
-      def initialize(order={})
-        self.id = order['oid']
-        self.date = Time.at(order['date'].to_i)
-        self.amount = order['amount'].to_f
-        self.price = order['price'].to_f
-      end
     end
   end
 end

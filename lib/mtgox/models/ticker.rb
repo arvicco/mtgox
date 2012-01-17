@@ -4,10 +4,18 @@ require 'singleton'
 
 module MtGox
   module Models
-    class Ticker
+    class Ticker < Model
       include Singleton
       include PriceTicker
-      attr_accessor :buy, :sell, :high, :low, :volume, :vwap
+      prop :buy,
+           :sell,
+           :high,
+           :low,
+           [:vol, :volume],
+           [:last, :price],
+           :avg,
+           :vwap
+
     end
   end
 end

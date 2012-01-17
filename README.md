@@ -1,6 +1,5 @@
 # Ruby wrapper for the Mt. Gox Trade API.
 
-
 ## <a name="fork"></a>This Fork
 This is a fork of https://github.com/sferik/mtgox. This fork features a rework of the
 original business domain entities into new Models, with an intent to make these Models

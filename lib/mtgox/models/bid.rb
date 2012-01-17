@@ -5,8 +5,7 @@ module MtGox
     class Bid < Offer
 
       def initialize(price=nil, amount=nil)
-        self.price = price.to_f
-        self.amount = amount.to_f
+        super :price => price, :amount => amount
       end
 
       def eprice
