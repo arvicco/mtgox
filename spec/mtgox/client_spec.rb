@@ -365,5 +365,48 @@ describe MtGox::Client do
       withdraw.last.currency.should == "USD"
       withdraw.last.amount.should == 64.59
     end
+
   end
+
+  describe "#withdraw_raw!" do
+    before do
+      body = test_body({"group1" => "BTC", "amount" => "1.0", "btca" => "1KxSo9bGBfPVFEtWNLpnUK1bfLNNT4q31L"})
+      stub_post('/api/0/withdraw.php').
+          with(:body => body, :headers => test_headers(body)).
+          to_return(:status => 200, :body => fixture('withdraw.json'))
+    end
+
+    it "should withdraw to BTC address by default" do
+      withdraw = @client.withdraw_raw!(:amount => 1.0,
+                                       :address => "1KxSo9bGBfPVFEtWNLpnUK1bfLNNT4q31L")
+      body = test_body({"group1" => "BTC", "amount" => "1.0", "btca" => "1KxSo9bGBfPVFEtWNLpnUK1bfLNNT4q31L"})
+      a_post("/api/0/withdraw.php").
+          with(:body => body, :headers => test_headers(body)).should have_been_made
+      withdraw.first.currency.should == "BTC"
+      withdraw.first.amount.should == 9.0
+      withdraw.last.currency.should == "USD"
+      withdraw.last.amount.should == 64.59
+    end
+
+    it "should withdraw to Dwolla" do
+      pending 'Return some realistic fixture, I have no Dwolla to test'
+
+      body1 = test_body({"group1" => 'DWUSD', "amount" => "1.0", 'dwaccount' => "111-222-3333"})
+      stub_post('/api/0/withdraw.php').
+          with(:body => body1, :headers => test_headers(body1)).
+          to_return(:status => 200, :body => fixture('withdraw_dwolla.json'))
+
+      withdraw = @client.withdraw_raw!(:group1 => 'DWUSD',
+                                       :amount => 1.0,
+                                       :address => "111-222-3333")
+      body = test_body({"group1" => 'DWUSD', "amount" => "1.0", 'dwaccount' => "111-222-3333"})
+      a_post("/api/0/withdraw.php").
+          with(:body => body, :headers => test_headers(body)).should have_been_made
+      withdraw.first.currency.should == "BTC"
+      withdraw.first.amount.should == 9.0
+      withdraw.last.currency.should == "USD"
+      withdraw.last.amount.should == 64.59
+    end
+  end
+
 end

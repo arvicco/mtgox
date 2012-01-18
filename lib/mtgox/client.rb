@@ -24,7 +24,6 @@ module MtGox
       post('/api/0/btcAddress.php')['addr']
     end
 
-
     # Fetch the latest ticker data
     #
     # @authenticated false
@@ -220,17 +219,65 @@ module MtGox
       end
     end
 
+    ## Work with Mt. Gox accounts
+
     # Transfer bitcoins from your Mt. Gox account into another account
     #
     # @authenticated true
     # @param amount [Numeric] the number of bitcoins to withdraw
-    # @param btca [String] the bitcoin address to send to
+    # @param address [String] the bitcoin address to send to
     # @return [Array<MtGox::Balance>]
     # @example
     #   # Withdraw 1 BTC from your account
     #   MtGox.withdraw! 1.0, '1KxSo9bGBfPVFEtWNLpnUK1bfLNNT4q31L'
-    def withdraw!(amount, btca)
-      parse_balance(post('/api/0/withdraw.php', {:group1 => 'BTC', :amount => amount, :btca => btca}))
+    def withdraw! amount, address
+      parse_balance(post('/api/0/withdraw.php', {:group1 => 'BTC', :amount => amount, :btca => address}))
+    end
+
+    # Transfer bitcoins from your Mt. Gox account (raw params given)
+    #
+    # @authenticated true
+    #   @opt amount [Numeric] the number of bitcoins to withdraw
+    #   @opt address [String] the bitcoin address to send to
+    #   @opt green [Numeric] =1 to use greenaddress feature ( see GreenAddress )
+    #   @opt dwaccount [String] account for a dwolla withdraw XXX-XXX-XXXX (no btca=xxxxxxx!)
+    #   @opt group1 [String] BTC - for BTC address withdraw
+    #                        BTC2CODE for BTC coupon withdraw
+    #                        USD2CODE add a Currency parameter ( example Currency=EUR to get a mtgox EUR coupon )
+    #                        DWUSD for Dwolla withdraw
+    #   @opt Currency [String] add to get specific currency coupons with group1=USD2CODE
+    #                          (example group1=USD2CODE&Currency=EUR for Mtgox EUR coupons)
+    # @return [Array<MtGox::Balance>]
+    # @example
+    #   # Withdraw 1 BTC from your account
+    #   MtGox.withdraw! 1.0, '1KxSo9bGBfPVFEtWNLpnUK1bfLNNT4q31L'
+    def withdraw_raw! params_raw
+      params = {}
+      params[:group1] = params_raw.delete(:group1) || params_raw.delete(:group) || 'BTC'
+      params[:amount] = params_raw.delete(:amount)
+      raise "Withdrawal params should have :amount" unless params[:amount]
+      case params[:group1]
+        when 'BTC' # BTC withdrawal by default
+          params[:btca] = params_raw.delete(:address) || params_raw.delete(:btca)
+          raise "Wrong BTC address" unless params[:btca] =~ /[a-zA-Z1-9]{27,35}$/
+          parse_balance(post('/api/0/withdraw.php', params.merge(params_raw)))
+        when 'DWUSD'
+          params[:dwaccount] = params_raw.delete(:address) ||
+              params_raw.delete(:account) || params_raw.delete(:dwaccount)
+          raise "Wrong Dwolla address" unless params[:dwaccount] =~ /\d{3}-\d{3}-\d{4}$/
+          parse_balance(post('/api/0/withdraw.php', params.merge(params_raw)))
+        else
+          parse_balance(post('/api/0/withdraw.php', params))
+      end
+    end
+
+    # Redeem MtGox code
+    #
+    # @authenticated true
+    # @param code [String] coupon code to redeem
+    # @return [Array<MtGox::Balance>]
+    def redeem_code!(code)
+      parse_balance(post('api/0/redeemCode.php', {:code => code}))
     end
 
     private
