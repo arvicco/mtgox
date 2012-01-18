@@ -10,7 +10,10 @@ module MtGox
 
     ORDER_TYPES = {:sell => 1, :buy => 2}
 
+    # Using class variables instead of Singleton
     @@ticker = {}
+    @@min_ask = MinAsk.new
+    @@max_bid = MaxBid.new
 
     # Fetch a deposit address
     # @authenticated true
@@ -34,11 +37,10 @@ module MtGox
         ticker = get("/api/1/BTC#{currency}/public/ticker")['return']
         @@ticker[currency] ||= MultiTicker.new :currency => currency
         @@ticker[currency].set_attributes ticker
-        @@ticker[currency]
       else
         ticker = get('/api/0/data/ticker.php')['ticker']
-        Ticker.instance.set_attributes ticker
-        Ticker.instance
+        @@ticker['USD'] ||= Ticker.new
+        @@ticker['USD'].set_attributes ticker
       end
     end
 
@@ -90,8 +92,7 @@ module MtGox
     # @example
     #   MtGox.min_ask
     def min_ask
-      MinAsk.instance.set_attributes asks.first.attributes
-      MinAsk.instance
+      @@min_ask.set_attributes asks.first.attributes
     end
 
     # Fetch the highest priced bid
@@ -101,8 +102,7 @@ module MtGox
     # @example
     #   MtGox.max_bid
     def max_bid
-      MaxBid.instance.set_attributes bids.first.attributes
-      MaxBid.instance
+      @@max_bid.set_attributes bids.first.attributes
     end
 
     # Fetch recent trades

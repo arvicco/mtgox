@@ -1,11 +1,9 @@
 require 'mtgox/models/model'
 require 'mtgox/price_ticker'
-require 'singleton'
 
 module MtGox
   module Models
     class Ticker < Model
-      include Singleton
       prop :buy,
            :sell,
            :high,

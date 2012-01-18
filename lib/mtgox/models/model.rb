@@ -51,6 +51,7 @@ module MtGox
 
       def set_attributes attrs={}
         attrs.keys.each { |key| self.send("#{key}=", attrs[key]) }
+        self
       end
     end # class Model
   end # module Models
