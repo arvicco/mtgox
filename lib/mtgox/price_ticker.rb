@@ -1,10 +1,19 @@
 module MtGox
   module PriceTicker
-    attr_reader :previous_price, :price
 
-    def price=(price)
-      @previous_price = @price
-      @price = price
+    def self.included host
+      host.class_eval do
+        prop :previous_price
+
+        alias old_price= price=
+
+        def price= val
+          @attributes[:previous_price] = price.to_f
+          send "old_price=", val
+        end
+
+        alias last= price=
+      end
     end
 
     def up?
@@ -22,6 +31,7 @@ module MtGox
     def unchanged?
       !changed?
     end
+
     alias :unch? :unchanged?
   end
 end

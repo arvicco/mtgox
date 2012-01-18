@@ -6,17 +6,18 @@ module MtGox
   module Models
     class Ticker < Model
       include Singleton
-      include PriceTicker
       prop :buy,
            :sell,
            :high,
            :low,
-           [:vol, :volume],
-           [:last, :price],
            :last_all,
            :last_local,
            :avg,
-           :vwap
+           :vwap,
+           [:vol, :volume],
+           [:price, :last] => :f
+
+      include PriceTicker
 
     end
   end

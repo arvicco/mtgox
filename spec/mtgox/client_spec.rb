@@ -28,14 +28,11 @@ describe MtGox::Client do
       #WebMock.allow_net_connect!
       stub_get('/api/0/data/ticker.php').
           to_return(:status => 200, :body => fixture('ticker.json'))
-      stub_get('/api/1/BTCEUR/public/ticker').
-          to_return(:status => 200, :body => fixture('multi-ticker.json'))
     end
 
     it "should fetch the ticker" do
       ticker = @client.ticker
-      a_get('/api/0/data/ticker.php').
-          should have_been_made
+      a_get('/api/0/data/ticker.php').should have_been_made
       ticker.buy.should == 6.6809
       ticker.sell.should == 6.69803
       ticker.high.should == 6.95
@@ -48,10 +45,36 @@ describe MtGox::Client do
       ticker.vwap.should == 6.668617425
     end
 
+    it 'keeps track of consecutive ticker readings' do
+      ticker = @client.ticker
+      ticker = @client.ticker
+      ticker.should be_unchanged
+      ticker.should_not be_changed
+      ticker.should_not be_up
+      ticker.should_not be_down
+
+      # Now changed
+      stub_get('/api/0/data/ticker.php').
+          to_return(:status => 200, :body => fixture('ticker1.json'))
+      ticker = @client.ticker
+      ticker.should_not be_unchanged
+      ticker.should be_changed
+      ticker.should be_up
+      ticker.should_not be_down
+
+      a_get('/api/0/data/ticker.php').should have_been_made.times(3)
+    end
+  end
+
+  describe '#ticker(currency)' do
+    before do
+      stub_get('/api/1/BTCEUR/public/ticker').
+          to_return(:status => 200, :body => fixture('multi-ticker.json'))
+    end
+
     it "should fetch the multi-currency ticker" do
       ticker = @client.ticker('EUR')
-      a_get('/api/1/BTCEUR/public/ticker').
-          should have_been_made
+      a_get('/api/1/BTCEUR/public/ticker').should have_been_made
       ticker.buy.should == 5.340
       ticker.sell.should == 5.350
       ticker.high.should == 5.500
@@ -66,6 +89,26 @@ describe MtGox::Client do
       ticker.vwap.should == 5.29709
       ticker.currency.should == 'EUR'
     end
+
+    it 'keeps track of consecutive ticker readings' do
+      ticker = @client.ticker('EUR')
+      ticker = @client.ticker('EUR')
+      ticker.should be_unchanged
+      ticker.should_not be_changed
+      ticker.should_not be_up
+      ticker.should_not be_down
+
+      # Now changed
+      stub_get('/api/1/BTCEUR/public/ticker').
+          to_return(:status => 200, :body => fixture('multi-ticker1.json'))
+      ticker = @client.ticker('EUR')
+      ticker.should_not be_unchanged
+      ticker.should be_changed
+      ticker.should be_up
+      ticker.should_not be_down
+
+      a_get('/api/1/BTCEUR/public/ticker').should have_been_made.times(3)
+    end
   end
 
   describe 'depth methods' do
@@ -77,8 +120,7 @@ describe MtGox::Client do
     describe '#asks' do
       it "should fetch open asks" do
         asks = @client.asks
-        a_get('/api/0/data/getDepth.php').
-            should have_been_made
+        a_get('/api/0/data/getDepth.php').should have_been_made
         asks.last.price.should == 23.75
         asks.last.eprice.should == 23.905385002516354
         asks.last.amount.should == 50
@@ -94,8 +136,7 @@ describe MtGox::Client do
     describe "#bids" do
       it "should fetch open bids" do
         bids = @client.bids
-        a_get('/api/0/data/getDepth.php').
-            should have_been_made
+        a_get('/api/0/data/getDepth.php').should have_been_made
         bids.last.price.should == 14.62101
         bids.last.eprice.should == 14.525973435000001
         bids.last.amount.should == 5
@@ -110,8 +151,7 @@ describe MtGox::Client do
     describe "#offers" do
       it "should fetch both bids and asks, with only one call" do
         offers = @client.offers
-        a_get('/api/0/data/getDepth.php').
-            should have_been_made.once
+        a_get('/api/0/data/getDepth.php').should have_been_made.once
         offers[:asks].last.price.should == 23.75
         offers[:asks].last.eprice.should == 23.905385002516354
         offers[:asks].last.amount.should == 50
@@ -124,8 +164,7 @@ describe MtGox::Client do
     describe '#min_ask' do
       it "should fetch the lowest priced ask" do
         min_ask = @client.min_ask
-        a_get('/api/0/data/getDepth.php').
-            should have_been_made.once
+        a_get('/api/0/data/getDepth.php').should have_been_made.once
         min_ask.price.should == 17.00009
         min_ask.eprice.should == 17.11131353799698
         min_ask.amount.should == 36.22894353
@@ -135,8 +174,7 @@ describe MtGox::Client do
     describe '#max_bid' do
       it "should fetch the highest priced bid" do
         max_bid = @client.max_bid
-        a_get('/api/0/data/getDepth.php').
-            should have_been_made.once
+        a_get('/api/0/data/getDepth.php').should have_been_made.once
         max_bid.price.should == 17.0
         max_bid.eprice.should == 16.8895
         max_bid.amount.should == 82.53875035
@@ -153,8 +191,7 @@ describe MtGox::Client do
 
     it "should fetch trades" do
       trades = @client.trades
-      a_get('/api/0/data/getTrades.php').
-          should have_been_made
+      a_get('/api/0/data/getTrades.php').should have_been_made
       trades.last.date.should == Time.utc(2011, 6, 27, 18, 28, 8)
       trades.last.price.should == 17.00009
       trades.last.amount.should == 0.5
@@ -172,8 +209,7 @@ describe MtGox::Client do
     it "should fetch balance" do
       balance = @client.balance
       a_post("/api/0/getFunds.php").
-          with(:body => test_body, :headers => test_headers).
-          should have_been_made
+          with(:body => test_body, :headers => test_headers).should have_been_made
       balance.first.currency.should == "BTC"
       balance.first.amount.should == 22.0
       balance.last.currency.should == "USD"
@@ -192,8 +228,7 @@ describe MtGox::Client do
       it "should fetch orders" do
         buys = @client.buys
         a_post("/api/0/getOrders.php").
-            with(:body => test_body, :headers => test_headers).
-            should have_been_made
+            with(:body => test_body, :headers => test_headers).should have_been_made
         buys.last.price.should == 7
         buys.last.date.should == Time.utc(2011, 6, 27, 18, 20, 38)
       end
@@ -203,8 +238,7 @@ describe MtGox::Client do
       it "should fetch sells" do
         sells = @client.sells
         a_post("/api/0/getOrders.php").
-            with(:body => test_body, :headers => test_headers).
-            should have_been_made
+            with(:body => test_body, :headers => test_headers).should have_been_made
         sells.last.price.should == 99.0
         sells.last.date.should == Time.utc(2011, 6, 27, 18, 20, 20)
       end
@@ -214,8 +248,7 @@ describe MtGox::Client do
       it "should fetch both buys and sells, with only one call" do
         orders = @client.orders
         a_post("/api/0/getOrders.php").
-            with(:body => test_body, :headers => test_headers).
-            should have_been_made
+            with(:body => test_body, :headers => test_headers).should have_been_made
         orders[:buys].last.price.should == 7.0
         orders[:buys].last.date.should == Time.utc(2011, 6, 27, 18, 20, 38)
         orders[:sells].last.price.should == 99.0
@@ -236,8 +269,7 @@ describe MtGox::Client do
       buy = @client.buy!(0.88, 0.89)
       body = test_body({"amount" => "0.88", "price" => "0.89"})
       a_post("/api/0/buyBTC.php").
-          with(:body => body, :headers => test_headers(body)).
-          should have_been_made
+          with(:body => body, :headers => test_headers(body)).should have_been_made
       buy[:buys].last.price.should == 2.0
       buy[:buys].last.date.should == Time.utc(2011, 6, 27, 18, 26, 21)
       buy[:sells].last.price.should == 99.0
@@ -257,8 +289,7 @@ describe MtGox::Client do
       body = test_body({"amount" => "0.88", "price" => "89.0"})
       sell = @client.sell!(0.88, 89.0)
       a_post("/api/0/sellBTC.php").
-          with(:body => body, :headers => test_headers(body)).
-          should have_been_made
+          with(:body => body, :headers => test_headers(body)).should have_been_made
       sell[:buys].last.price.should == 2.0
       sell[:buys].last.date.should == Time.utc(2011, 6, 27, 18, 26, 21)
       sell[:sells].last.price.should == 200
@@ -307,8 +338,7 @@ describe MtGox::Client do
         cancel = @client.cancel({'oid' => "bddd042c-e837-4a88-a92e-3b7c05e483df", 'type' => 2})
         body = test_body({"oid" => "bddd042c-e837-4a88-a92e-3b7c05e483df", "type" => "2"})
         a_post('/api/0/cancelOrder.php').
-            with(:body => body, :headers => test_headers(body)).
-            should have_been_made
+            with(:body => body, :headers => test_headers(body)).should have_been_made
         cancel[:buys].last.price.should == 7.0
         cancel[:buys].last.date.should == Time.utc(2011, 6, 27, 18, 20, 38)
         cancel[:sells].last.price.should == 99.0
@@ -329,8 +359,7 @@ describe MtGox::Client do
       withdraw = @client.withdraw!(1.0, "1KxSo9bGBfPVFEtWNLpnUK1bfLNNT4q31L")
       body = test_body({"group1" => "BTC", "amount" => "1.0", "btca" => "1KxSo9bGBfPVFEtWNLpnUK1bfLNNT4q31L"})
       a_post("/api/0/withdraw.php").
-          with(:body => body, :headers => test_headers(body)).
-          should have_been_made
+          with(:body => body, :headers => test_headers(body)).should have_been_made
       withdraw.first.currency.should == "BTC"
       withdraw.first.amount.should == 9.0
       withdraw.last.currency.should == "USD"

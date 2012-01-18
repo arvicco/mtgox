@@ -5,10 +5,9 @@ module MtGox
   module Models
     # Multi-currency Ticker
     class MultiTicker < Model
-      include PriceTicker
       prop :currency,
            [:vol, :volume] => proc { |val| val['value'].to_f },
-           [:last, :price] => proc { |val| val['value'].to_f },
+           [:price, :last] => proc { |val| val['value'].to_f },
            :last_local => proc { |val| val['value'].to_f },
            :last_orig => proc { |val| val['value'].to_f },
            :last_all => proc { |val| val['value'].to_f },
@@ -18,6 +17,8 @@ module MtGox
            :low => proc { |val| val['value'].to_f },
            :avg => proc { |val| val['value'].to_f },
            :vwap => proc { |val| val['value'].to_f }
+
+      include PriceTicker
 
       def to_s
         "<MultiTicker: #{currency} vol #{ vol.round(2) } last #{ last.round(3) }"+

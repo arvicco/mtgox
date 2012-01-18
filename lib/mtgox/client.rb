@@ -97,7 +97,7 @@ module MtGox
     # Fetch the highest priced bid
     #
     # @authenticated false
-    # @return [MtGox::MinBid]
+    # @return [MtGox::MaxBid]
     # @example
     #   MtGox.max_bid
     def max_bid
