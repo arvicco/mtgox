@@ -226,12 +226,12 @@ module MtGox
     # @authenticated true
     # @param amount [Numeric] the number of bitcoins to withdraw
     # @param address [String] the bitcoin address to send to
-    # @return [Array<MtGox::Balance>]
+    # @return {"status"=> "Message", "reference"=>"uuid"}
     # @example
     #   # Withdraw 1 BTC from your account
     #   MtGox.withdraw! 1.0, '1KxSo9bGBfPVFEtWNLpnUK1bfLNNT4q31L'
     def withdraw! amount, address
-      parse_balance(post('/api/0/withdraw.php', {:group1 => 'BTC', :amount => amount, :btca => address}))
+      post('/api/0/withdraw.php', {:group1 => 'BTC', :amount => amount, :btca => address})
     end
 
     # Transfer bitcoins from your Mt. Gox account (raw params given)
@@ -260,14 +260,16 @@ module MtGox
         when 'BTC' # BTC withdrawal by default
           params[:btca] = params_raw.delete(:address) || params_raw.delete(:btca)
           raise "Wrong BTC address" unless params[:btca] =~ /[a-zA-Z1-9]{27,35}$/
-          parse_balance(post('/api/0/withdraw.php', params.merge(params_raw)))
+          post('/api/0/withdraw.php', params.merge(params_raw))
         when 'DWUSD'
           params[:dwaccount] = params_raw.delete(:address) ||
               params_raw.delete(:account) || params_raw.delete(:dwaccount)
           raise "Wrong Dwolla address" unless params[:dwaccount] =~ /\d{3}-\d{3}-\d{4}$/
-          parse_balance(post('/api/0/withdraw.php', params.merge(params_raw)))
+          post('/api/0/withdraw.php', params.merge(params_raw))
+        when 'BTC2CODE', 'USD2CODE'
+          post('/api/0/withdraw.php', params.merge(params_raw))
         else
-          parse_balance(post('/api/0/withdraw.php', params))
+          post('/api/0/withdraw.php', params.merge(params_raw))
       end
     end
 
@@ -277,7 +279,7 @@ module MtGox
     # @param code [String] coupon code to redeem
     # @return [Array<MtGox::Balance>]
     def redeem_code!(code)
-      parse_balance(post('api/0/redeemCode.php', {:code => code}))
+      post('/api/0/redeemCode.php', :code => code)
     end
 
     private

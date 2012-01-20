@@ -14,7 +14,7 @@ module MtGox
            [:side, :type, :type_str] => proc { |val| val == 1 || val == 'bid' ? :bid : :ask }
 
       def to_s
-        "<Depth: #{ vol > 0 ? '+' : ''}#{ vol.round(2) } at #{type} #{ price.round(3) }" +
+        "<Depth: #{type} #{ vol > 0 ? '+' : ''}#{ vol.round(2) } at #{ price.round(3) }" +
             " #{currency}/#{item} >"
       end
 

@@ -1,5 +1,5 @@
-require 'simplecov'
-SimpleCov.start
+#require 'simplecov'
+#SimpleCov.start
 require 'base64'
 require 'mtgox'
 require 'rspec'

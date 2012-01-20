@@ -360,10 +360,8 @@ describe MtGox::Client do
       body = test_body({"group1" => "BTC", "amount" => "1.0", "btca" => "1KxSo9bGBfPVFEtWNLpnUK1bfLNNT4q31L"})
       a_post("/api/0/withdraw.php").
           with(:body => body, :headers => test_headers(body)).should have_been_made
-      withdraw.first.currency.should == "BTC"
-      withdraw.first.amount.should == 9.0
-      withdraw.last.currency.should == "USD"
-      withdraw.last.amount.should == 64.59
+      withdraw['status'].should =~ /Funds are on their way/
+      withdraw['reference'].should == "d576535c-68a9-4ecc-b7fb-9ea18dd0367c"
     end
 
   end
@@ -382,15 +380,11 @@ describe MtGox::Client do
       body = test_body({"group1" => "BTC", "amount" => "1.0", "btca" => "1KxSo9bGBfPVFEtWNLpnUK1bfLNNT4q31L"})
       a_post("/api/0/withdraw.php").
           with(:body => body, :headers => test_headers(body)).should have_been_made
-      withdraw.first.currency.should == "BTC"
-      withdraw.first.amount.should == 9.0
-      withdraw.last.currency.should == "USD"
-      withdraw.last.amount.should == 64.59
+      withdraw['status'].should =~ /Funds are on their way/
+      withdraw['reference'].should == "d576535c-68a9-4ecc-b7fb-9ea18dd0367c"
     end
 
     it "should withdraw to Dwolla" do
-      pending 'Return some realistic fixture, I have no Dwolla to test'
-
       body1 = test_body({"group1" => 'DWUSD', "amount" => "1.0", 'dwaccount' => "111-222-3333"})
       stub_post('/api/0/withdraw.php').
           with(:body => body1, :headers => test_headers(body1)).
@@ -399,14 +393,59 @@ describe MtGox::Client do
       withdraw = @client.withdraw_raw!(:group1 => 'DWUSD',
                                        :amount => 1.0,
                                        :address => "111-222-3333")
-      body = test_body({"group1" => 'DWUSD', "amount" => "1.0", 'dwaccount' => "111-222-3333"})
       a_post("/api/0/withdraw.php").
-          with(:body => body, :headers => test_headers(body)).should have_been_made
-      withdraw.first.currency.should == "BTC"
-      withdraw.first.amount.should == 9.0
-      withdraw.last.currency.should == "USD"
-      withdraw.last.amount.should == 64.59
+          with(:body => body1, :headers => test_headers(body1)).should have_been_made
+      withdraw['error'].should =~ /Invalid Dwolla account/
+    end
+
+    it "should withdraw to BTC coupon" do
+      body1 = test_body({"group1" => 'BTC2CODE', "amount" => "0.5"})
+      stub_post('/api/0/withdraw.php').
+          with(:body => body1, :headers => test_headers(body1)).
+          to_return(:status => 200, :body => fixture('withdraw_btc_code.json'))
+
+      withdraw = @client.withdraw_raw!(:amount => 0.5, :group1 => 'BTC2CODE')
+      a_post("/api/0/withdraw.php").
+          with(:body => body1, :headers => test_headers(body1)).should have_been_made
+
+      withdraw['code'].should == "MTGOX-BTC-5LHXF-58CFB-RBR9Z-46C57"
+      withdraw['status'].should =~ /Generated new code/
+      withdraw['reference'].should == "00c64004-6bbb-4fdc-a026-2cda492aae63"
+    end
+
+    it "should withdraw to USD coupon" do
+      body1 = test_body({"group1" => 'USD2CODE', "amount" => "0.5"})
+      stub_post('/api/0/withdraw.php').
+          with(:body => body1, :headers => test_headers(body1)).
+          to_return(:status => 200, :body => fixture('withdraw_usd_code.json'))
+
+      withdraw = @client.withdraw_raw!(:amount => 0.5, :group1 => 'USD2CODE')
+      a_post("/api/0/withdraw.php").
+          with(:body => body1, :headers => test_headers(body1)).should have_been_made
+
+      withdraw['code'].should == "MTGOX-USD-GJG9B-GZST8-EDMAS-800FB"
+      withdraw['status'].should =~ /Generated new code/
+      withdraw['reference'].should == "1745595c-db09-4f26-9f12-8057a71c3031"
     end
   end
 
+  describe "#redeem_code!" do
+    before do
+      @body = test_body({"code" => "MTGOX-BTC-5LHXF-58CFB-RBR9Z-46C57"})
+      stub_post('/api/0/redeemCode.php').
+          with(:body => @body, :headers => test_headers(@body)).
+          to_return(:status => 200, :body => fixture('redeem_btc_code.json'))
+    end
+
+    it "should withdraw to BTC address by default" do
+      redeem = @client.redeem_code!("MTGOX-BTC-5LHXF-58CFB-RBR9Z-46C57")
+      a_post('/api/0/redeemCode.php').
+          with(:body => @body, :headers => test_headers(@body)).should have_been_made
+
+      redeem['amount'].should == 0.5
+      redeem['currency'].should == "BTC"
+      redeem['status'].should =~ /Your account has been credited by/
+      redeem['reference'].should == "1cb21630-cf7d-40e4-8f72-7a6e6c2792d0"
+    end
+  end
 end
