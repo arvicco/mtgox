@@ -1,0 +1,2 @@
+1. ActiveRecord
+2. ('1/generic/private/order/result',{'order':saved_order.oid, 'type':saved_order.order_type})

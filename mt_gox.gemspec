@@ -18,6 +18,8 @@ Gem::Specification.new do |gem|
   gem.add_dependency 'faraday', '~> 0.7'
   gem.add_dependency 'faraday_middleware', '~> 0.7'
   gem.add_dependency 'multi_json', '~> 1.0'
+
+  gem.add_development_dependency 'my_scripts'
   gem.add_development_dependency 'json'
   gem.add_development_dependency 'rake'
   gem.add_development_dependency 'rdiscount'

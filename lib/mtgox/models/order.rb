@@ -10,8 +10,6 @@ module MtGox
            :real_status, #  "open" /
            :dark,
            :priority,
-           :amount_int => :i,
-           :price_int => :i,
            [:id, :oid] => :i, # Order ID
            :type => proc { |val| val == 1 ? :sell : :buy }, # 1 for sell order or 2 for buy order
            [:date, :time] => proc { |val| Time.at val } # 1326655184

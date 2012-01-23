@@ -149,8 +149,20 @@ describe MtGox::Client do
     end
 
     describe "#offers" do
-      it "should fetch both bids and asks, with only one call" do
+      it "should fetch (short version) of bids and asks by default" do
         offers = @client.offers
+        a_get('/api/0/data/getDepth.php').should have_been_made.once
+        offers[:asks].last.price.should == 23.75
+        offers[:asks].last.eprice.should == 23.905385002516354
+        offers[:asks].last.amount.should == 50
+        offers[:bids].last.price.should == 14.62101
+        offers[:bids].last.eprice.should == 14.525973435000001
+        offers[:bids].last.amount.should == 5
+      end
+
+      it "should fetch bids/asks in extended form with #offers(true)" do
+        pending 'Stubs!'
+        offers = @client.offers(true)
         a_get('/api/0/data/getDepth.php').should have_been_made.once
         offers[:asks].last.price.should == 23.75
         offers[:asks].last.eprice.should == 23.905385002516354

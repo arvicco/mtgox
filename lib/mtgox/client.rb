@@ -12,8 +12,8 @@ module MtGox
 
     # Using class variables instead of Singleton
     @@ticker = {}
-    @@min_ask = MinAsk.new
-    @@max_bid = MaxBid.new
+    @@min_ask = MinAsk.new []
+    @@max_bid = MaxBid.new []
 
     # Fetch a deposit address
     # @authenticated true
@@ -49,18 +49,12 @@ module MtGox
     # @return [Hash] with keys :asks and :asks, which contain arrays as described in {MtGox::Client#asks} and {MtGox::Clients#bids}
     # @example
     #   MtGox.offers
-    def offers
-      offers = get('/api/0/data/getDepth.php')
-      asks = offers['asks'].sort_by do |ask|
-        ask[0].to_f
-      end.map! do |ask|
-        Ask.new(*ask)
-      end
-      bids = offers['bids'].sort_by do |bid|
-        -bid[0].to_f
-      end.map! do |bid|
-        Bid.new(*bid)
-      end
+    def offers full=false
+      offers = full ?
+          get('/api/1/BTCUSD/public/fulldepth')['return'] :
+          get('/api/0/data/getDepth.php')
+      asks = offers['asks'].map { |ask| Ask.new(ask) }.sort_by(&:price)
+      bids = offers['bids'].map { |bid| Bid.new(bid) }.sort_by { |bid| -bid.price }
       {:asks => asks, :bids => bids}
     end
 
