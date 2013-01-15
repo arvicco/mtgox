@@ -4,6 +4,11 @@ module MtGox
   module Models
     class Trade < Offer
 
+      #prop :amount => :f,
+      #     :price => :f,
+      #     :amount_int => :i, # "1067215400"
+      #     :price_int => :i #   681526"
+
       prop :type, #        "trade"
            :item, #        "BTC"
            :price_currency, # "USD"

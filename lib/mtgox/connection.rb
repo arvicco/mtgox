@@ -24,6 +24,7 @@ module MtGox
         connection.use Faraday::Request::UrlEncoded
         connection.use Faraday::Response::RaiseError
         connection.use Faraday::Response::ParseJson
+        #connection.use FaradayMiddleware::ParseJson
         connection.use Faraday::Response::RaiseMtGoxError
         connection.adapter(Faraday.default_adapter)
       end

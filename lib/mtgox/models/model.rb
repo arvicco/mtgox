@@ -3,7 +3,6 @@ module MtGox
 
     # Base data Model class, in future it will be developed into ActiveModel
     class Model
-
       def self.prop *properties
         prop_hash = properties.last.is_a?(Hash) ? properties.pop : {}
 
@@ -42,6 +41,7 @@ module MtGox
         end
       end
 
+
       attr_reader :attributes
 
       def initialize attrs={}
@@ -53,6 +53,7 @@ module MtGox
         attrs.keys.each { |key| self.send("#{key}=", attrs[key]) }
         self
       end
+
     end # class Model
   end # module Models
 end

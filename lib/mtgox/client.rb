@@ -24,6 +24,37 @@ module MtGox
       post('/api/0/btcAddress.php')['addr']
     end
 
+    # Fetch a MtGox executions for a given order
+    # @authenticated true
+    # @return [String]
+    # @example
+    #   MtGox.executions
+    def executions order_id, order_type = 'bid' # 'ask'
+      res = post('/api/1/generic/private/order/result',
+                 :order => order_id,
+                 :type => order_type)
+    end
+
+    # Fetch a MtGox private info
+    # @authenticated true
+    # @return [String]
+    # @example
+    #   MtGox.private_info
+    def private_info symbol = 'USD'
+      #res = post("/api/0/info.php")
+      res = post("https://mtgox.com/api/1/generic/private/info")
+      res["result"] == "success" ? res["return"] : res
+    end
+
+    # Fetch a MtGox currency info
+    # @return [String]
+    # @example
+    #   MtGox.currency_info
+    def currency_info symbol = 'USD'
+      res = get("/api/1/generic/public/currency?currency=#{symbol}")
+      res["result"] == "success" ? res["return"] : res
+    end
+
     # Fetch the latest ticker data
     #
     # @authenticated false
@@ -53,7 +84,7 @@ module MtGox
       offers = full ?
           get('/api/1/BTCUSD/public/fulldepth')['return'] :
           get('/api/0/data/getDepth.php')
-      asks = offers['asks'].map { |ask| Ask.new(ask) }.sort_by(&:price)
+      asks = offers['asks'].map { |ask| Ask.new(ask) }.sort_by(&:price) # TODO: Comparable ?
       bids = offers['bids'].map { |bid| Bid.new(bid) }.sort_by { |bid| -bid.price }
       {:asks => asks, :bids => bids}
     end
